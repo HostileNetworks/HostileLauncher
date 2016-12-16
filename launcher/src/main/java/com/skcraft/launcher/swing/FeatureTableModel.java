@@ -95,9 +95,9 @@ public class FeatureTableModel extends AbstractTableModel {
         }
         switch (feature.getRecommendation()) {
             case STARRED:
-                return " <span style=\"color: #3758DB\">" + SharedLocale.tr("features.starred") + "</span>";
+                return " <span style=\"color: #617be3\">" + SharedLocale.tr("features.starred") + "</span>";
             case AVOID:
-                return " <span style=\"color: red\">" + SharedLocale.tr("features.avoid") + "</span>";
+                return " <span style=\"color: #ff6b6e\">" + SharedLocale.tr("features.avoid") + "</span>";
             default:
                 return "";
         }
