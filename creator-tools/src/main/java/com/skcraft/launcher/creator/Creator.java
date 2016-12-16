@@ -32,7 +32,7 @@ public class Creator {
     @Getter private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
     public Creator() {
-        this.dataDir = getAppDataDir();
+        this.dataDir = new File(getExecutionPath());
         this.config = Persistence.load(new File(dataDir, "config.json"), CreatorConfig.class);
 
         // Remove deleted workspaces
@@ -58,15 +58,6 @@ public class Creator {
         return fsv.getDefaultDirectory();
     }
 
-    private static File getAppDataDir() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.contains("win")) {
-            return new File(getFileChooseDefaultDir(), "SKCraft Modpack Creator");
-        } else {
-            return new File(System.getProperty("user.home"), ".skcraftcreator");
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         Launcher.setupLogger();
         System.setProperty("skcraftLauncher.killWithoutConfirm", "true");
@@ -83,6 +74,13 @@ public class Creator {
                 SwingHelper.showErrorDialog(null, "Failed to start the modpack creator program.", "Start Error", e);
             }
         });
+    }
+    
+    private String getExecutionPath() {
+        String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
+        absolutePath = absolutePath.replaceAll("%20"," "); // Surely need to do this here
+        return absolutePath;
     }
 
 }
