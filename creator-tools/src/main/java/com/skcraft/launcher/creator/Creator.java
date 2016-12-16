@@ -48,8 +48,9 @@ public class Creator {
 
     public void showWelcome() {
         WelcomeDialog dialog = new WelcomeDialog();
-        WelcomeController controller = new WelcomeController(dialog, this);
+        WelcomeController controller = new WelcomeController(dialog, this, dataDir);
         controller.show();
+        dialog.dispose();
     }
 
     private static File getFileChooseDefaultDir() {

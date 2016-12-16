@@ -42,7 +42,7 @@ public class WelcomeController {
     private final Creator creator;
     private final RecentListModel recentListModel;
 
-    public WelcomeController(WelcomeDialog dialog, Creator creator) {
+    public WelcomeController(WelcomeDialog dialog, Creator creator, File dir) {
         this.dialog = dialog;
         this.creator = creator;
 
@@ -50,6 +50,8 @@ public class WelcomeController {
 
         recentListModel = new RecentListModel(creator.getConfig().getRecentEntries());
         dialog.getRecentList().setModel(recentListModel);
+        
+        openWorkspace(dir);
     }
 
     public void show() {
