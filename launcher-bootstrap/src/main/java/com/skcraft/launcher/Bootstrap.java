@@ -66,7 +66,7 @@ public class Bootstrap {
         	Object[] options = {tr("portableprompt.buttonstandard"), tr("portableprompt.buttonportable"), tr("button.cancel")};
         	BufferedImage icon = SwingHelper.readIconImage(Bootstrap.class, "bootstrapper_icon.png");
         	int choice = JOptionPane.showOptionDialog(null,
-        			tr("portableprompt.msg"),
+        			new JLabel(tr("portableprompt.msg")),
         			tr("portableprompt.title"),
         			JOptionPane.YES_NO_CANCEL_OPTION,
         			JOptionPane.QUESTION_MESSAGE,
