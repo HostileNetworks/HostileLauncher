@@ -31,7 +31,7 @@ public class DownloadFrame extends JFrame {
     private final JPanel textAreaPanel = new JPanel(new BorderLayout());
     private final JProgressBar progressBar = new JProgressBar();
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
-    private final JButton cancelButton = new JButton(tr("button.cancal"));
+    private final JButton cancelButton = new JButton(tr("button.cancel"));
 
     public DownloadFrame(ProgressObservable observable) {
         super(tr("downloader.title"));

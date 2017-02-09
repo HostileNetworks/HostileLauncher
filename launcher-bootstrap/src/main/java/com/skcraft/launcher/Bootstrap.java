@@ -10,8 +10,11 @@ import com.skcraft.launcher.bootstrap.*;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -43,6 +46,7 @@ public class Bootstrap {
         boolean portable = isPortableMode();
 
         Bootstrap bootstrap = new Bootstrap(portable, args);
+
         try {
             bootstrap.cleanup();
             bootstrap.launch();
@@ -57,10 +61,42 @@ public class Bootstrap {
         this.properties = BootstrapUtils.loadProperties(Bootstrap.class, "bootstrap.properties");
 
         File baseDir = portable ? new File(".") : getUserLauncherDir();
+        
+        if (!baseDir.exists()) {
+        	Object[] options = {tr("portableprompt.buttonstandard"), tr("portableprompt.buttonportable"), tr("button.cancel")};
+        	BufferedImage icon = SwingHelper.readIconImage(Bootstrap.class, "bootstrapper_icon.png");
+        	int choice = JOptionPane.showOptionDialog(null,
+        			tr("portableprompt.msg"),
+        			tr("portableprompt.title"),
+        			JOptionPane.YES_NO_CANCEL_OPTION,
+        			JOptionPane.QUESTION_MESSAGE,
+        			new ImageIcon(icon),
+        			options,
+        			options[0]
+        	);
+        	if (choice == 0) {
+        		// delete the portable flag if it exists
+        		if (portable) {
+        			if (new File("portable.txt").exists()) {
+        				new File("portable.txt").delete();
+        			}
+        		}
+        		portable = false;
+        	} else if (choice == 1) {
+        		if (!portable) {
+        			new File("portable.txt").createNewFile();
+        			portable = true;
+        		}
+        	} else {
+        		System.exit(0);
+        	}
+        	// refresh the basedir
+        	baseDir = portable ? new File(".") : getUserLauncherDir();
+        }
 
         this.baseDir = baseDir;
         this.portable = portable;
-        this.binariesDir = new File(baseDir, "launcher");
+        this.binariesDir = new File(baseDir, getProperties().getProperty("launcherName"));
         this.originalArgs = args;
 
         binariesDir.mkdirs();
@@ -180,20 +216,13 @@ public class Bootstrap {
     public static void setSwingLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Throwable e) {
-        }
-    }
-
-    private static File getFileChooseDefaultDir() {
-        JFileChooser chooser = new JFileChooser();
-        FileSystemView fsv = chooser.getFileSystemView();
-        return fsv.getDefaultDirectory();
+        } catch (Throwable e) {}
     }
 
     private File getUserLauncherDir() {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win")) {
-            return new File(getFileChooseDefaultDir(), getProperties().getProperty("homeFolderWindows"));
+            return new File(System.getenv("APPDATA"), getProperties().getProperty("homeFolderWindows"));
         } else {
             return new File(System.getProperty("user.home"), getProperties().getProperty("homeFolder"));
         }
