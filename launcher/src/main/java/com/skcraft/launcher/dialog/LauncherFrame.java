@@ -107,6 +107,7 @@ public class LauncherFrame extends JFrame {
         });
 
         updateCheck.setSelected(true);
+        instancesTable.setVisible(false);
         instancesTable.setModel(instancesModel);
         launchButton.setFont(launchButton.getFont().deriveFont(Font.BOLD));
         splitPane.setDividerLocation(300);
@@ -363,6 +364,7 @@ public class LauncherFrame extends JFrame {
                     instancesTable.setRowSelectionInterval(0, 0);
                     updateLaunchButtonText(0);
                 }
+                instancesTable.setVisible(true);
                 instancesTable.getColumnModel().getColumn(0).setPreferredWidth(64);
                 requestFocus();
             }
