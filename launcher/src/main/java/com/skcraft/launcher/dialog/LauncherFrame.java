@@ -22,11 +22,16 @@ import lombok.extern.java.Log;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -50,7 +55,7 @@ public class LauncherFrame extends JFrame {
     private final JScrollPane instanceScroll = new JScrollPane(instancesTable);
     private WebpagePanel webView;
     private JSplitPane splitPane;
-    private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
+    private final JButton launchButton = new JButton(SharedLocale.tr("launcher.download"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
     private final JButton optionsButton = new JButton(SharedLocale.tr("launcher.options"));
     private final JButton selfUpdateButton = new JButton(SharedLocale.tr("launcher.updateLauncher"));
@@ -68,7 +73,7 @@ public class LauncherFrame extends JFrame {
         instancesModel = new InstanceTableModel(launcher.getInstances());
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(400, 300));
+        setMinimumSize(new Dimension(1024, 576));
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -104,7 +109,7 @@ public class LauncherFrame extends JFrame {
         updateCheck.setSelected(true);
         instancesTable.setModel(instancesModel);
         launchButton.setFont(launchButton.getFont().deriveFont(Font.BOLD));
-        splitPane.setDividerLocation(200);
+        splitPane.setDividerLocation(300);
         splitPane.setDividerSize(4);
         splitPane.setOpaque(false);
         container.add(splitPane, "grow, wrap, span 5, gapbottom unrel, w null:680, h null:350");
@@ -113,6 +118,7 @@ public class LauncherFrame extends JFrame {
         container.add(updateCheck);
         container.add(selfUpdateButton);
         container.add(optionsButton);
+        launchButton.setVisible(false);
         container.add(launchButton);
 
         add(container, BorderLayout.CENTER);
@@ -122,6 +128,7 @@ public class LauncherFrame extends JFrame {
             public void tableChanged(TableModelEvent e) {
                 if (instancesTable.getRowCount() > 0) {
                     instancesTable.setRowSelectionInterval(0, 0);
+                    updateLaunchButtonText(0);
                 }
             }
         });
@@ -158,6 +165,16 @@ public class LauncherFrame extends JFrame {
             }
         });
 
+        instancesTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int rowAtPoint = instancesTable.rowAtPoint(e.getPoint());
+                if (rowAtPoint > -1) {
+                    updateLaunchButtonText(rowAtPoint);
+                }
+            }
+        });
+        
         instancesTable.addMouseListener(new PopupMouseAdapter() {
             @Override
             protected void showPopup(MouseEvent e) {
@@ -170,6 +187,16 @@ public class LauncherFrame extends JFrame {
                 popupInstanceMenu(e.getComponent(), e.getX(), e.getY(), selected);
             }
         });
+    }
+    
+    private void updateLaunchButtonText(int index) {
+        if (index == 0)
+            launchButton.setVisible(false);
+        else {
+            boolean isLocal = launcher.getInstances().get(index).isLocal();
+            launchButton.setText(SharedLocale.tr(isLocal ? "launcher.launch" : "launcher.download"));
+            launchButton.setVisible(true);
+        }
     }
 
     protected JPanel createContainerPanel() {
@@ -334,7 +361,9 @@ public class LauncherFrame extends JFrame {
                 instancesModel.update();
                 if (instancesTable.getRowCount() > 0) {
                     instancesTable.setRowSelectionInterval(0, 0);
+                    updateLaunchButtonText(0);
                 }
+                instancesTable.getColumnModel().getColumn(0).setPreferredWidth(64);
                 requestFocus();
             }
         }, SwingExecutor.INSTANCE);
@@ -375,6 +404,10 @@ public class LauncherFrame extends JFrame {
             LauncherFrame frame = frameRef.get();
             if (frame != null) {
                 frame.instancesModel.update();
+                if (frame.instancesTable.getSelectedRow() == -1) {
+                    frame.instancesTable.setRowSelectionInterval(0, 0);
+                    frame.updateLaunchButtonText(0);
+                }
             }
         }
 

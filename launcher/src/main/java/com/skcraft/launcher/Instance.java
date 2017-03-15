@@ -141,6 +141,10 @@ public class Instance implements Comparable<Instance> {
 
     @Override
     public int compareTo(Instance o) {
+        if (priority == -1)
+            return -1;
+        if (o.priority == -1)
+            return 1;
         if (isLocal() && !o.isLocal()) {
             return -1;
         } else if (!isLocal() && o.isLocal()) {

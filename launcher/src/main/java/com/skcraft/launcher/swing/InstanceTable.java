@@ -6,6 +6,12 @@
 
 package com.skcraft.launcher.swing;
 
+import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.JComponent;
+import javax.swing.border.MatteBorder;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 public class InstanceTable extends DefaultTable {
@@ -19,8 +25,19 @@ public class InstanceTable extends DefaultTable {
     public void setModel(TableModel dataModel) {
         super.setModel(dataModel);
         try {
-            getColumnModel().getColumn(0).setMaxWidth(24);
-        } catch (ArrayIndexOutOfBoundsException e) {
-        }
+            getColumnModel().getColumn(0).setPreferredWidth(64);
+        } catch (ArrayIndexOutOfBoundsException e) {}
+    }
+
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        Component component = super.prepareRenderer(renderer, row, column);
+        ((JComponent)component).setBorder(new MatteBorder(0, 0, (row == 0 ? 1 : 0), 0, Color.GRAY) );
+        return component;
+    }
+
+    @Override
+    public void setRowHeight() {
+        setRowHeight(64);
     }
 }
