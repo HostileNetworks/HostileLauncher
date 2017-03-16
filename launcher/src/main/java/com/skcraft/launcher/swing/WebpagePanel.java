@@ -106,6 +106,7 @@ public final class WebpagePanel extends JPanel {
         panel.setLayout(new WebpageLayoutManager());
         
         documentView = new JEditorPane();
+        documentView.setEditorKit(new WebpagePanelEditorKit());
         documentView.setOpaque(false);
         documentView.setBorder(null);
         documentView.setEditable(false);
