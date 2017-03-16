@@ -31,8 +31,7 @@ public class ConsoleFrame extends JFrame {
 
     private static ConsoleFrame globalFrame;
 
-    @Getter private final Image trayRunningIcon;
-    @Getter private final Image trayClosedIcon;
+    @Getter private final Image trayIcon;
 
     @Getter private final MessageLog messageLog;
     @Getter private LinedBoxPanel buttonsPanel;
@@ -58,11 +57,10 @@ public class ConsoleFrame extends JFrame {
      */
     public ConsoleFrame(@NonNull String title, int numLines, boolean colorEnabled) {
         messageLog = new MessageLog(numLines, colorEnabled);
-        trayRunningIcon = SwingHelper.createImage(Launcher.class, "tray_ok.png");
-        trayClosedIcon = SwingHelper.createImage(Launcher.class, "tray_closed.png");
+        trayIcon = SwingHelper.createImage(Launcher.class, "icon.png");
 
         setTitle(title);
-        setIconImage(trayRunningIcon);
+        setIconImage(trayIcon);
 
         setSize(new Dimension(650, 400));
         initComponents();
@@ -80,21 +78,13 @@ public class ConsoleFrame extends JFrame {
      * Add components to the frame.
      */
     private void initComponents() {
-        JButton pastebinButton = new JButton(SharedLocale.tr("console.uploadLog"));
         buttonsPanel = new LinedBoxPanel(true);
 
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        buttonsPanel.addElement(pastebinButton);
 
         add(buttonsPanel, BorderLayout.NORTH);
         add(messageLog, BorderLayout.CENTER);
 
-        pastebinButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pastebinLog();
-            }
-        });
     }
 
     /**
@@ -115,28 +105,6 @@ public class ConsoleFrame extends JFrame {
         messageLog.clear();
         registeredGlobalLog = false;
         dispose();
-    }
-
-    /**
-     * Send the contents of the message log to a pastebin.
-     */
-    private void pastebinLog() {
-        String text = messageLog.getPastableText();
-        // Not really bytes!
-        messageLog.log(tr("console.pasteUploading", text.length()), messageLog.asHighlighted());
-
-        PastebinPoster.paste(text, new PastebinPoster.PasteCallback() {
-            @Override
-            public void handleSuccess(String url) {
-                messageLog.log(tr("console.pasteUploaded", url), messageLog.asHighlighted());
-                SwingHelper.openURL(url, messageLog);
-            }
-
-            @Override
-            public void handleError(String err) {
-                messageLog.log(tr("console.pasteFailed", err), messageLog.asError());
-            }
-        });
     }
 
     public static void showMessages() {

@@ -33,6 +33,7 @@ public class InstanceTable extends DefaultTable {
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
         ((JComponent)component).setBorder(new MatteBorder(0, 0, (row == 0 ? 1 : 0), 0, Color.GRAY) );
+        component.setBackground(null);
         return component;
     }
 

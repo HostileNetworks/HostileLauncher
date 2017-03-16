@@ -40,8 +40,8 @@ public class ProcessConsoleFrame extends ConsoleFrame {
      * @param numLines the number of log lines
      * @param colorEnabled whether color is enabled in the log
      */
-    public ProcessConsoleFrame(int numLines, boolean colorEnabled) {
-        super(SharedLocale.tr("console.title"), numLines, colorEnabled);
+    public ProcessConsoleFrame(String instanceName, int numLines, boolean colorEnabled) {
+        super(instanceName + " " + SharedLocale.tr("console.title"), numLines, colorEnabled);
         processOut = new PrintWriter(
                 getMessageLog().getOutputStream(new Color(0, 0, 255)), true);
         initComponents();
@@ -58,6 +58,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
             Process lastProcess = this.process;
             if (lastProcess != null) {
                 processOut.println(tr("console.processEndCode", lastProcess.exitValue()));
+                performClose();
             }
         } catch (IllegalThreadStateException e) {
         }
@@ -142,7 +143,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
             return false;
         }
 
-        trayIcon = new TrayIcon(getTrayRunningIcon());
+        trayIcon = new TrayIcon(getTrayIcon());
         trayIcon.setImageAutoSize(true);
         trayIcon.setToolTip(SharedLocale.tr("console.trayTooltip"));
 
@@ -188,8 +189,6 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     }
 
     private synchronized void updateComponents() {
-        Image icon = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
-
         killButton.setEnabled(hasProcess());
 
         if (!hasProcess() || trayIcon == null) {
@@ -199,10 +198,10 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         }
 
         if (trayIcon != null) {
-            trayIcon.setImage(icon);
+            trayIcon.setImage(getTrayIcon());
         }
 
-        setIconImage(icon);
+        setIconImage(getTrayIcon());
     }
 
     private synchronized void contextualClose() {

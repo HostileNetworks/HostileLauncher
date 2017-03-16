@@ -1,0 +1,6 @@
+1) Modify version in build.gradle
+2) Run build script
+3) Go to launcher-fancy/build/libs/ and copy the -all.jar file to HNLauncher_x.x.x.jar
+4) Run the command: pack200 --no-gzip HNLauncher_1.0.0.jar.pack HNLauncher_1.0.0.jar
+5) Copy the .pack file to hostilenetworks.github.io/launcher_dist/ and edit latest.json to match new filename and version
+

@@ -27,7 +27,7 @@ public class FancyBackgroundPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (background != null) {
-            g.drawImage(background, 0, 0, null);
+            g.drawImage(background, this.getWidth() - background.getWidth(null), 0, null);
         }
     }
 

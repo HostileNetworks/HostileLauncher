@@ -41,6 +41,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
@@ -143,7 +144,7 @@ public final class Launcher {
     public String getVersion() {
         String version = getProperties().getProperty("version");
         if (version.equals("${project.version}")) {
-            return "1.0.0-SNAPSHOT";
+            return "0.0-SNAPSHOT";
         }
         return version;
     }
@@ -298,10 +299,10 @@ public final class Launcher {
      *
      * @return the news URL
      */
-    public URL getNewsURL() {
+    public URL getNewsURL(int noCacheTrickParam) {
         try {
             return HttpRequest.url(
-                    String.format(getProperties().getProperty("newsUrl"),
+                    String.format(getProperties().getProperty("newsUrl") + "?noCacheTrick=" + noCacheTrickParam,
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

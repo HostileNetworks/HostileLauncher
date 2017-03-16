@@ -27,10 +27,12 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
     private static final int CONSOLE_NUM_LINES = 10000;
 
     private final Launcher launcher;
+    private final String instanceName;
     private ProcessConsoleFrame consoleFrame;
 
-    public LaunchProcessHandler(@NonNull Launcher launcher) {
+    public LaunchProcessHandler(String instanceName, @NonNull Launcher launcher) {
         this.launcher = launcher;
+        this.instanceName = instanceName;
     }
 
     @Override
@@ -41,7 +43,7 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    consoleFrame = new ProcessConsoleFrame(CONSOLE_NUM_LINES, true);
+                    consoleFrame = new ProcessConsoleFrame(instanceName, CONSOLE_NUM_LINES, true);
                     consoleFrame.setProcess(process);
                     consoleFrame.setVisible(true);
                     MessageLog messageLog = consoleFrame.getMessageLog();

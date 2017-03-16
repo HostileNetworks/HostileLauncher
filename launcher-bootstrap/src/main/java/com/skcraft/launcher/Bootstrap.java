@@ -42,6 +42,11 @@ public class Bootstrap {
     public static void main(String[] args) throws Throwable {
         SimpleLogFormatter.configureGlobalLogger();
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Bootstrap", Locale.getDefault());
+        
+        if (Double.parseDouble(System.getProperty("java.specification.version")) < 1.8) {
+            SwingHelper.showErrorDialog(null, tr("errors.javaversion"), tr("errorTitle"), null);
+            return;
+        }
 
         boolean portable = isPortableMode();
 

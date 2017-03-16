@@ -148,3 +148,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Project specific stuff
+launcher-fancy/assets/
+launcher-fancy/instances/
+launcher-fancy/libraries/

@@ -183,8 +183,11 @@ public class InstanceList {
                         instance.setLocal(false);
                         remote.add(instance);
 
-                        log.info("Available remote instance: '" + instance.getName() +
-                                "' at version " + instance.getVersion());
+                        if (!instance.getName().equals("")) {
+                        	// the special Welcome "instance" has no name, so skip writing the info to log
+	                        log.info("Available remote instance: '" + instance.getName() +
+	                                "' at version " + instance.getVersion());
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -195,7 +198,8 @@ public class InstanceList {
                     instances.addAll(local);
                     instances.addAll(remote);
 
-                    log.info(instances.size() + " instance(s) enumerated.");
+                    // less one to skip the welcome "instance".
+                    log.info(instances.size() - 1 + " instance(s) enumerated.");
                 }
             }
 

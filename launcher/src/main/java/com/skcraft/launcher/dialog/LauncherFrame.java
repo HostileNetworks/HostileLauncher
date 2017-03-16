@@ -22,21 +22,22 @@ import lombok.extern.java.Log;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+
+import org.apache.commons.io.FilenameUtils;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.util.Random;
 
 import static com.skcraft.launcher.util.SharedLocale.tr;
 
@@ -47,6 +48,7 @@ import static com.skcraft.launcher.util.SharedLocale.tr;
 public class LauncherFrame extends JFrame {
 
     private final Launcher launcher;
+    private final int noCacheTrickParam; // used in a fake PHP query to trick server to get fresh non-cached copy 
 
     @Getter
     private final InstanceTable instancesTable = new InstanceTable();
@@ -68,12 +70,14 @@ public class LauncherFrame extends JFrame {
      */
     public LauncherFrame(@NonNull Launcher launcher) {
         super(tr("launcher.title", launcher.getVersion()));
+        
+        noCacheTrickParam = new Random().nextInt(9999);
 
         this.launcher = launcher;
         instancesModel = new InstanceTableModel(launcher.getInstances());
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1024, 576));
+        setMinimumSize(new Dimension(1150, 680));
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -90,7 +94,7 @@ public class LauncherFrame extends JFrame {
 
     private void initComponents() {
         JPanel container = createContainerPanel();
-        container.setLayout(new MigLayout("fill, insets dialog", "[][]push[][]", "[grow][]"));
+        container.setLayout(new MigLayout("fill, insets dialog", "[][][][]push[]", "[grow][]"));
 
         webView = createNewsPanel();
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, instanceScroll, webView);
@@ -107,18 +111,19 @@ public class LauncherFrame extends JFrame {
         });
 
         updateCheck.setSelected(true);
+        updateCheck.setOpaque(false);
         instancesTable.setVisible(false);
         instancesTable.setModel(instancesModel);
         launchButton.setFont(launchButton.getFont().deriveFont(Font.BOLD));
-        splitPane.setDividerLocation(300);
+        splitPane.setDividerLocation(230);
         splitPane.setDividerSize(4);
         splitPane.setOpaque(false);
         container.add(splitPane, "grow, wrap, span 5, gapbottom unrel, w null:680, h null:350");
         SwingHelper.flattenJSplitPane(splitPane);
+        container.add(optionsButton);
         container.add(refreshButton);
         container.add(updateCheck);
         container.add(selfUpdateButton);
-        container.add(optionsButton);
         launchButton.setVisible(false);
         container.add(launchButton);
 
@@ -128,7 +133,7 @@ public class LauncherFrame extends JFrame {
             @Override
             public void tableChanged(TableModelEvent e) {
                 if (instancesTable.getRowCount() > 0) {
-                    instancesTable.setRowSelectionInterval(0, 0);
+                    instancesTable.changeSelection(0, 0, false, false);
                     updateLaunchButtonText(0);
                 }
             }
@@ -141,7 +146,7 @@ public class LauncherFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 loadInstances();
                 launcher.getUpdateManager().checkForUpdate();
-                webView.browse(launcher.getNewsURL(), false);
+                webView.browse(launcher.getNewsURL(noCacheTrickParam), false);
             }
         });
 
@@ -172,6 +177,21 @@ public class LauncherFrame extends JFrame {
                 int rowAtPoint = instancesTable.rowAtPoint(e.getPoint());
                 if (rowAtPoint > -1) {
                     updateLaunchButtonText(rowAtPoint);
+                    
+                    // update the webview content
+                    if (rowAtPoint == 0) {
+                        webView.browse(launcher.getNewsURL(noCacheTrickParam), true);
+                    } else {
+                        String modpackUrlDir = FilenameUtils.getFullPath(launcher.getInstances().get(rowAtPoint).getManifestURL().toString());
+                        URL htmlUrl = null;
+                        try {
+                            htmlUrl = new URL(modpackUrlDir + "html/index.html?noCacheTrick=" + noCacheTrickParam);
+                        } catch (Exception ex) {}
+                        
+                        if (htmlUrl != null) {
+                            webView.browse(htmlUrl, true);
+                        }
+                    }
                 }
             }
         });
@@ -181,11 +201,11 @@ public class LauncherFrame extends JFrame {
             protected void showPopup(MouseEvent e) {
                 int index = instancesTable.rowAtPoint(e.getPoint());
                 Instance selected = null;
-                if (index >= 0) {
-                    instancesTable.setRowSelectionInterval(index, index);
+                if (index > 0) {
+                    instancesTable.changeSelection(index, index, false, false);
                     selected = launcher.getInstances().get(index);
+                    popupInstanceMenu(e.getComponent(), e.getX(), e.getY(), selected);
                 }
-                popupInstanceMenu(e.getComponent(), e.getX(), e.getY(), selected);
             }
         });
     }
@@ -210,7 +230,7 @@ public class LauncherFrame extends JFrame {
      * @return the news panel
      */
     protected WebpagePanel createNewsPanel() {
-        return WebpagePanel.forURL(launcher.getNewsURL(), false);
+        return WebpagePanel.forURL(launcher.getNewsURL(noCacheTrickParam), false);
     }
 
     /**
@@ -361,7 +381,7 @@ public class LauncherFrame extends JFrame {
             public void run() {
                 instancesModel.update();
                 if (instancesTable.getRowCount() > 0) {
-                    instancesTable.setRowSelectionInterval(0, 0);
+                    instancesTable.changeSelection(0, 0, false, false);
                     updateLaunchButtonText(0);
                 }
                 instancesTable.setVisible(true);
@@ -380,6 +400,8 @@ public class LauncherFrame extends JFrame {
     }
 
     private void launch() {
+        if (instancesTable.getSelectedRow() == 0)
+            return;
         boolean permitUpdate = updateCheck.isSelected();
         Instance instance = launcher.getInstances().get(instancesTable.getSelectedRow());
 
@@ -407,7 +429,7 @@ public class LauncherFrame extends JFrame {
             if (frame != null) {
                 frame.instancesModel.update();
                 if (frame.instancesTable.getSelectedRow() == -1) {
-                    frame.instancesTable.setRowSelectionInterval(0, 0);
+                    frame.instancesTable.changeSelection(0, 0, false, false);
                     frame.updateLaunchButtonText(0);
                 }
             }

@@ -19,7 +19,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -237,11 +240,11 @@ public final class WebpagePanel extends JPanel {
     
     private class FetchWebpage implements Runnable {
         private URL url;
-        
+
         public FetchWebpage(URL url) {
             this.url = url;
         }
-        
+
         @Override
         public void run() {
             HttpURLConnection conn = null;
@@ -260,14 +263,13 @@ public final class WebpagePanel extends JPanel {
 
                 if (conn.getResponseCode() != 200) {
                     throw new IOException(
-                            "Did not get expected 200 code, got "
-                                    + conn.getResponseCode());
+                            "Did not get expected 200 code, got " + conn.getResponseCode() + " while trying to load " + url.toString());
                 }
 
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(conn.getInputStream(),
                                 "UTF-8"));
-
+                
                 StringBuilder s = new StringBuilder();
                 char[] buf = new char[1024];
                 int len = 0;
@@ -277,6 +279,29 @@ public final class WebpagePanel extends JPanel {
                 String result = s.toString();
                 
                 checkInterrupted();
+                
+                /*
+                 * DEBUG TEST
+                 */
+                
+                /*
+                InputStream is = new FileInputStream("E:/Dan/HostileNetworks/hostilenetworks.github.io/modpacks/Forge_1.7.10/distrib/html/index.html");
+                BufferedReader bufTest = new BufferedReader(new InputStreamReader(is));
+                        
+                String line = bufTest.readLine();
+                StringBuilder sb = new StringBuilder();
+                        
+                while(line != null){
+                   sb.append(line).append("\n");
+                   line = bufTest.readLine();
+                }
+                        
+                result = sb.toString();
+                */
+                
+                /*
+                 * DEBUG TEST END
+                 */
 
                 setDisplay(result, LauncherUtils.concat(url, ""));
             } catch (IOException e) {

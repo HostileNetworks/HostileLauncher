@@ -1,0 +1,1 @@
+START "" c:\eclipse\eclipse.exe -data "%~dp0\..\HostileNetworksLauncher_eclipse"
